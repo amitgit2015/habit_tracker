@@ -1,2 +1,6 @@
+# Correct syntax to ignore a file
+.gitignore
+# Ignore a directory
 node_modules/
-projectStructure/
+# Ignore projectStructure file
+projectStructure

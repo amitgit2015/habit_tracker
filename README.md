@@ -4,7 +4,7 @@ This is user management service where user can login, user roles will be created
 
 Project structure :
 
-user_management/
+habit_tracker/
 │
 ├── app
 │   ├── __init__.py

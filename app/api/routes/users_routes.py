@@ -1,26 +1,35 @@
+# FastAPI routes
 # User-related endpoints
 
-from fastapi import APIRouter
-from ..schemas.user import User 
+
+from ..schemas.user_schema import User 
 from typing import List, Optional
+from app.api.dependencies.db_session import get_db
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.models.user_model import User as UserModel
 
 router = APIRouter()
 
-# In-memory "database"
-users_db = []
 
 #
 @router.post("/users/", response_model=User) # Create a new user and response with the created user
-def create_user(user: User):
-    if any(u.id == user.id for u in users_db):# Check for duplicate IDs
-        raise HTTPException(status_code=400, detail="User ID already exists")
-    users_db.append(user) # Add user to the "database"
-    return user
+def create_user(user: User, db: Session = Depends(get_db)):
+    db.query(UserModel).filter((UserModel.username == user.username) | (UserModel.email == user.email)).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Username or email already registered")
+    new_user = UserModel(username=user.username, email=user.email, password_hash=user.password_hash)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
 
-@router.get("/users/", response_model=List[User]) #
-def get_users():
-    return users_db
 
+# Get all users
+@router.get("/users/", response_model=List[User])
+def get_users(db: Session = Depends(get_db)):
+    return db.query(UserModel).all()
+'''
 @router.get("/users/{user_id}", response_model=User) # Get user by ID
 def get_user(user_id: int):
     for user in users_db:
@@ -43,3 +52,5 @@ def delete_user(user_id: int):
             del users_db[idx]
             return {"detail": "User deleted"}
     raise HTTPException(status_code=404, detail="User not found")
+
+'''

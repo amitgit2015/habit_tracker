@@ -8,6 +8,7 @@ class User(BaseModel):
     username: str
     email: EmailStr
     password_hash: str
+    role: str  # New role field
 
     class Config:
         orm_mode = True

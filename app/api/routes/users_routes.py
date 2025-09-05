@@ -2,7 +2,7 @@
 # User-related endpoints
 
 
-from ..schemas.user_schema import User 
+from ..schemas.user_schema import UserCreate, UserOut, UserUpdate
 from typing import List, Optional
 from app.api.dependencies.db_session import get_db
 from fastapi import APIRouter, Depends, HTTPException
@@ -13,8 +13,8 @@ router = APIRouter()
 
 
 # Create a new user
-@router.post("/users/", response_model=User) # Create a new user and response with the created user
-def create_user(user: User, db: Session = Depends(get_db)):
+@router.post("/users/", response_model=UserOut) # Create a new user and response with the created user
+def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(UserModel).filter((UserModel.username == user.username) | (UserModel.email == user.email)).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username or email already registered")
@@ -26,12 +26,12 @@ def create_user(user: User, db: Session = Depends(get_db)):
 
 
 # Get all users
-@router.get("/users/", response_model=List[User])
+@router.get("/users/", response_model=List[UserOut])
 def get_users(db: Session = Depends(get_db)):
     return db.query(UserModel).all()
 
-# Get user by ID    
-@router.get("/users/{user_id}", response_model=User) 
+# Get user by ID
+@router.get("/users/{user_id}", response_model=UserOut)
 def get_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if user:
@@ -39,8 +39,8 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
     raise HTTPException(status_code=404, detail="User not found")
 
 # Update user by ID
-@router.put("/users/{user_id}", response_model=User)
-def update_user(user_id: int, updated_user: User, db: Session = Depends(get_db)):
+@router.put("/users/{user_id}", response_model=UserOut)
+def update_user(user_id: int, updated_user: UserUpdate, db: Session = Depends(get_db)):
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if user:
         user.username = updated_user.username

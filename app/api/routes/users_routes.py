@@ -7,10 +7,10 @@ from typing import List, Optional
 from app.api.dependencies.db_session import get_db
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.models.user_model import User as UserModel
+from app.models.user_model import UserModel
+from app.utils.auth_utils import hash_password, verify_password
 
 router = APIRouter()
-
 
 # Create a new user
 @router.post("/users/", response_model=UserOut) # Create a new user and response with the created user
@@ -18,7 +18,12 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(UserModel).filter((UserModel.username == user.username) | (UserModel.email == user.email)).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username or email already registered")
-    new_user = UserModel(username=user.username, email=user.email, password_hash=user.password_hash, role=user.role)
+    new_user = UserModel(
+    username=user.username,
+    email=user.email,
+    password_hash=hash_password(user.password_hash),  # assuming user.password_hash is the plain password from the request
+    role=user.role
+)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)

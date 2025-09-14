@@ -4,7 +4,7 @@ from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 
 class UserCreate(BaseModel):
-    id: int
+    #id: int
     username: str
     email: EmailStr
     password_hash: str

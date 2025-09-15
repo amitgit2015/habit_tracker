@@ -23,10 +23,11 @@ def create_user(
     db_user = db.query(UserModel).filter((UserModel.username == user.username) | (UserModel.email == user.email)).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username or email already registered")
+    hashed_pw = hash_password(user.password)
     new_user = UserModel(
     username=user.username,
     email=user.email,
-    password_hash=hash_password(user.password_hash),  # assuming user.password_hash is the plain password from the request
+    password_hash=hashed_pw, # store as password_hash in DB
     role=user.role
 )
     db.add(new_user)
@@ -66,7 +67,7 @@ def update_user(
     if user:
         user.username = updated_user.username
         user.email = updated_user.email
-        user.password_hash = updated_user.password_hash
+        user.password_hash = hash_password(updated_user.password) if updated_user.password else user.password_hash
         user.role = updated_user.role
         db.commit()
         db.refresh(user)
